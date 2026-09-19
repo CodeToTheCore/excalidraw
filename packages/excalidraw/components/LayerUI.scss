@@ -35,8 +35,44 @@
         white-space: nowrap;
       }
 
+      .first-save-prompt {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: min(36rem, calc(100vw - 2rem));
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--default-border-color);
+        border-radius: var(--border-radius-lg);
+        background: var(--island-bg-color);
+        color: var(--text-primary-color);
+        pointer-events: var(--ui-pointerEvents);
+        font-size: 0.875rem;
+
+        &__message {
+          flex: 1 1 auto;
+        }
+
+        &__plus-link,
+        &__dismiss {
+          color: var(--text-primary-color);
+          font-size: 0.75rem;
+          white-space: nowrap;
+        }
+
+        &__dismiss {
+          border: 0;
+          padding: 0;
+          background: transparent;
+          cursor: pointer;
+        }
+      }
+
       @media (max-width: 767px) {
-        .persistent-save-button {
+        .persistent-save-button,
+        .first-save-prompt {
           display: none;
         }
       }

@@ -405,6 +405,17 @@ const ExcalidrawWrapper = () => {
 
   const editorInterface = useEditorInterface();
 
+  const [hasSceneContent, setHasSceneContent] = useState(false);
+  const [isFirstSavePromptDismissed, setIsFirstSavePromptDismissed] = useState(
+    () =>
+      localStorage.getItem(STORAGE_KEYS.FIRST_SAVE_PROMPT_DISMISSED) === "true",
+  );
+
+  const dismissFirstSavePrompt = () => {
+    localStorage.setItem(STORAGE_KEYS.FIRST_SAVE_PROMPT_DISMISSED, "true");
+    setIsFirstSavePromptDismissed(true);
+  };
+
   // initial state
   // ---------------------------------------------------------------------------
 
@@ -738,6 +749,10 @@ const ExcalidrawWrapper = () => {
     appState: AppState,
     files: BinaryFiles,
   ) => {
+    if (!hasSceneContent && elements.some((element) => !element.isDeleted)) {
+      setHasSceneContent(true);
+    }
+
     if (collabAPI?.isCollaborating()) {
       collabAPI.syncElements(elements);
     }
@@ -1020,21 +1035,66 @@ const ExcalidrawWrapper = () => {
 
           return (
             <div className="excalidraw-ui-top-right">
-              {!isExcalidrawPlusSignedUser && !appState.viewModeEnabled && (
-                <button
-                  type="button"
-                  className="excalidraw-button persistent-save-button"
-                  title="Save File (Ctrl/Cmd+S)"
-                  aria-label="Save File"
-                  onClick={() => {
-                    if (excalidrawAPI) {
-                      downloadScene(excalidrawAPI);
-                    }
-                  }}
-                >
-                  Save File
-                </button>
-              )}
+              {!isExcalidrawPlusSignedUser &&
+                hasSceneContent &&
+                !isFirstSavePromptDismissed &&
+                !appState.viewModeEnabled && (
+                  <div
+                    className="first-save-prompt"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="first-save-prompt__message">
+                      Save a copy of your drawing to your device.
+                    </span>
+                    <button
+                      type="button"
+                      className="excalidraw-button first-save-prompt__save"
+                      onClick={() => {
+                        if (excalidrawAPI) {
+                          downloadScene(excalidrawAPI);
+                          dismissFirstSavePrompt();
+                        }
+                      }}
+                    >
+                      Save File
+                    </button>
+                    <a
+                      className="first-save-prompt__plus-link"
+                      href={`${
+                        import.meta.env.VITE_APP_PLUS_LP
+                      }/plus?utm_source=excalidraw&utm_medium=app&utm_content=firstSavePrompt`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Learn about Excalidraw+
+                    </a>
+                    <button
+                      type="button"
+                      className="first-save-prompt__dismiss"
+                      onClick={dismissFirstSavePrompt}
+                    >
+                      Not now
+                    </button>
+                  </div>
+                )}
+              {!isExcalidrawPlusSignedUser &&
+                (!hasSceneContent || isFirstSavePromptDismissed) &&
+                !appState.viewModeEnabled && (
+                  <button
+                    type="button"
+                    className="excalidraw-button persistent-save-button"
+                    title="Save File (Ctrl/Cmd+S)"
+                    aria-label="Save File"
+                    onClick={() => {
+                      if (excalidrawAPI) {
+                        downloadScene(excalidrawAPI);
+                      }
+                    }}
+                  >
+                    Save File
+                  </button>
+                )}
               {excalidrawAPI?.getEditorInterface().formFactor === "desktop" && (
                 <ExcalidrawPlusPromoBanner
                   isSignedIn={isExcalidrawPlusSignedUser}
